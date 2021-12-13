@@ -9,6 +9,12 @@ def main():
 
     #making game variables
     inventory = []
+    health = 0
+
+    def draw_health():
+        global health
+        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
+        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248, 32))
 
     def load_sprite(img, size = 64):
         return pygame.transform.scale(pygame.image.load(img), (size, size))
@@ -40,20 +46,19 @@ def main():
             screen.blit(self.sprite,(self.x,self.y))
 
     class Item_lvl_element:
-        def __init__(self, x, y, sprite, items):
+        def __init__(self, x, y, sprite, function):
             print(f"Item lvl element crated using sprite {sprite}!")
             self.x = x
             self.y = y
             self.sprite = load_sprite(sprite)
-            self.items = items
+            self.function = function
 
         def do_blit(self):
             screen.blit(self.sprite,(self.x,self.y))
 
         def on_collision(self):
             nonlocal inventory, lvl_elements
-            inventory.append(self.items)
-            print(f"Player picked up items:{self.items}")
+            self.function()
             lvl_elements.remove(self)
 
     class Entity:
@@ -151,6 +156,7 @@ def main():
         player.do_move()
         player.do_blit()
         #render
+        draw_health()
         pygame.display.flip()
         screen.fill((200,200,0))
         #fps limiter
