@@ -1,3 +1,4 @@
 *.toml
 *.lock
 /.venv
+assets/song.mp3
