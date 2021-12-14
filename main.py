@@ -31,13 +31,13 @@ def main():
         wall_sprite = load_sprite("assets/level_assets/wall.png")
         wall = lambda x,y:Basic_lvl_element(x,y,wall_sprite)
         
-        lvl_elements = {
-        "0_256" : wall(0,256),
-        "64_256" : wall(64,256),
-        "128_256" : wall(128,256),
-        "192_256" : wall(192,256),
-        "96 320" : Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
-        }
+        lvl_elements = [
+        wall(0,256),
+        wall(64,256),
+        wall(128,256),
+        wall(192,256),
+        Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
+        ]
 
     class Basic_lvl_element:
         def __init__(self, x, y, sprite):
@@ -63,6 +63,7 @@ def main():
         def on_collision(self):
             nonlocal inventory, lvl_elements
             self.function()
+            print(self, lvl_elements)
             lvl_elements.remove(self)
 
     class Entity:
@@ -82,15 +83,15 @@ def main():
             prev_y = self.y
             self.x = int(round(self.x + self.x_speed / 2))
             self.y = int(round(self.y + self.y_speed / 2))
-            for k ,v in lvl_elements.items():
-                if colliding(self.x, self.y, v.x, v.y):
+            for i in lvl_elements:
+                if colliding(self.x, self.y, i.x, i.y):
                     print(f"at coordinates {self.x, self.y} collision occoured at speed {self.x_speed, self.y_speed}")
                     try:
-                        v.on_collision() 
-                    except:
-                        print(f"no speical collision funstion triggered for {v.__class__.__name__}")
+                        i.on_collision() 
+                    except AttributeError:
+                        print(f"no speical collision function triggered for {i.__class__.__name__}")
                     else:
-                        print(f"speical collision funstion triggered for {v.__class__.__name__}")
+                        print(f"speical collision function triggered for {i.__class__.__name__}")
                     self.x = prev_x
                     self.y = prev_y
                     self.x_speed = 0
@@ -147,8 +148,8 @@ def main():
         prev_screen_width, prev_screen_height = screen_width, screen_height
         screen_width, screen_height = pygame.display.get_surface().get_size()
         player_offset = (screen_width/720.0,screen_height/720.0)
-        for k, v in lvl_elements.items():
-            v.do_blit()
+        for i in lvl_elements:
+            i.do_blit()
         if music:
             if not pygame.mixer.music.get_busy():
                 pygame.mixer.music.play()
@@ -177,7 +178,7 @@ def main():
         pygame.display.flip()
         screen.fill((200,200,0))
         #fps limiter
-        pygame.time.Clock().tick(30)
+        pygame.time.Clock().tick(45)
 
 if __name__=="__main__":
     #call the main function
