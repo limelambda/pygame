@@ -1,4 +1,5 @@
 *.toml
 *.lock
+*.breakpoints
 /venv
 assets/song.mp3

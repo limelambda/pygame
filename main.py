@@ -12,12 +12,10 @@ def main():
     def draw_health():
         tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
         nonlocal player
-        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, screen_width-32, screen_height/22.5))
-        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, screen_width-32-(100-player.health)*screen_width/100, screen_height/22.5))
+        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
+        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248-(100-player.health)*screen_width/100, 32))
 
-    def load_sprite(img, size = None):
-        if size == None:    
-            size = screen_width/20
+    def load_sprite(img, size = 64):
         return pygame.transform.scale(pygame.image.load(img), (size, size))
     
     def colliding(x_1,y_1,x_2,y_2):
@@ -30,34 +28,37 @@ def main():
         nonlocal lvl_elements, player
         for i in lvl_elements:
             del i
-        _0_256 = Basic_lvl_element(0,256,"assets/level_assets/wall_s.png")
-        _64_256 = Basic_lvl_element(64,256,"assets/level_assets/wall_s.png")
-        _128_256 = Basic_lvl_element(128,256,"assets/level_assets/wall_s.png")
-        _192_256 = Basic_lvl_element(192,256,"assets/level_assets/wall_s.png")
-        _96_320 = Interactable_lvl_element(96,320,"assets/level_assets/heal.png",player.heal)
-        lvl_elements = [_0_256,_64_256,_128_256,_192_256,_96_320]
-
+        wall_sprite = load_sprite("assets/level_assets/wall.png")
+        wall = lambda x,y:Basic_lvl_element(x,y,wall_sprite)
+        
+        lvl_elements = {
+        "0_256" : wall(0,256),
+        "64_256" : wall(64,256),
+        "128_256" : wall(128,256),
+        "192_256" : wall(192,256),
+        "96 320" : Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
+        }
 
     class Basic_lvl_element:
         def __init__(self, x, y, sprite):
             print(f"Basic lvl element crated using sprite {sprite}!")
             self.x = x
             self.y = y
-            self.sprite = load_sprite(sprite) 
+            self.sprite = sprite 
 
         def do_blit(self):
-            screen.blit(self.sprite,(self.x/(screen_width/720.0),self.y/(screen_height/720.0)))
+            screen.blit(self.sprite,(self.x,self.y))
 
     class Interactable_lvl_element:
         def __init__(self, x, y, sprite, function):
             print(f"Item lvl element crated using sprite {sprite}!")
             self.x = x
             self.y = y
-            self.sprite = load_sprite(sprite)
+            self.sprite = sprite
             self.function = function
 
         def do_blit(self):
-            screen.blit(self.sprite,(self.x-screen_width,self.y-screen_height))
+            screen.blit(self.sprite,(self.x,self.y))
 
         def on_collision(self):
             nonlocal inventory, lvl_elements
@@ -81,22 +82,22 @@ def main():
             prev_y = self.y
             self.x = int(round(self.x + self.x_speed / 2))
             self.y = int(round(self.y + self.y_speed / 2))
-            for i in lvl_elements:
-                if colliding(self.x, self.y, i.x, i.y):
+            for k ,v in lvl_elements.items():
+                if colliding(self.x, self.y, v.x, v.y):
                     print(f"at coordinates {self.x, self.y} collision occoured at speed {self.x_speed, self.y_speed}")
                     try:
-                        i.on_collision() 
+                        v.on_collision() 
                     except:
-                        print(f"no speical collision funstion triggered for {i.__class__.__name__}")
+                        print(f"no speical collision funstion triggered for {v.__class__.__name__}")
                     else:
-                        print(f"speical collision funstion triggered for {i.__class__.__name__}")
+                        print(f"speical collision funstion triggered for {v.__class__.__name__}")
                     self.x = prev_x
                     self.y = prev_y
                     self.x_speed = 0
                     self.y_speed = 0
                     print(f"Position now {self.x, self.y}")
-            self.x_speed = round(self.x_speed/720.0, 4)
-            self.y_speed = round(self.y_speed/720.0, 4)
+            self.x_speed = round(self.x_speed/1.1, 4)
+            self.y_speed = round(self.y_speed/1.1, 4)
 
         def do_blit(self):
             if abs(self.x_speed) < 0.0006:
@@ -114,7 +115,7 @@ def main():
                         self.direction = "up"
                     else:
                         self.direction = "down"
-            screen.blit(load_sprite(self.sprites[self.direction]),(self.x/(screen_width/720.0),self.y/(screen_height/720.0)))
+            screen.blit(load_sprite(self.sprites[self.direction]),(self.x,self.y))
 
         def heal(self):
             self.health += 25
@@ -126,7 +127,7 @@ def main():
     #load icon
     pygame.display.set_caption("Gam")
     #creating 240 x 180 screen surface
-    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+    screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
     #define a variable to control the main loop
     running = True
     #do da audio
@@ -146,8 +147,8 @@ def main():
         prev_screen_width, prev_screen_height = screen_width, screen_height
         screen_width, screen_height = pygame.display.get_surface().get_size()
         player_offset = (screen_width/720.0,screen_height/720.0)
-        for i in lvl_elements:
-            i.do_blit()
+        for k, v in lvl_elements.items():
+            v.do_blit()
         if music:
             if not pygame.mixer.music.get_busy():
                 pygame.mixer.music.play()
@@ -176,9 +177,7 @@ def main():
         pygame.display.flip()
         screen.fill((200,200,0))
         #fps limiter
-        if screen_width != prev_screen_width or screen_height != prev_screen_height:
-            blit_lvl_1()
-        time.sleep(0.01)
+        pygame.time.Clock().tick(30)
 
 if __name__=="__main__":
     #call the main function
