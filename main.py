@@ -9,12 +9,12 @@ def main():
 
     #making game variables
     inventory = []
-    health = 0
 
     def draw_health():
-        global health
-        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
-        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248, 32))
+        tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
+        nonlocal player
+        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, screen_width-32, 32))
+        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, screen_width-32-(100-player.health)*screen_width/100, 32))
 
     def load_sprite(img, size = 64):
         return pygame.transform.scale(pygame.image.load(img), (size, size))
@@ -26,12 +26,12 @@ def main():
             return y_1 in y_range or y_1 + 64 in y_range
 
     def blit_lvl_1():
-        nonlocal lvl_elements
+        nonlocal lvl_elements, player
         _0_256 = Basic_lvl_element(0,256,"assets/level_assets/wall_s.png")
         _64_256 = Basic_lvl_element(64,256,"assets/level_assets/wall_s.png")
         _128_256 = Basic_lvl_element(128,256,"assets/level_assets/wall_s.png")
         _192_256 = Basic_lvl_element(192,256,"assets/level_assets/wall_s.png")
-        _96_320 = Item_lvl_element(96,320,"assets/level_assets/heal.png","health potion")
+        _96_320 = Interactable_lvl_element(96,320,"assets/level_assets/heal.png",player.heal)
         lvl_elements = [_0_256,_64_256,_128_256,_192_256,_96_320]
 
 
@@ -45,7 +45,7 @@ def main():
         def do_blit(self):
             screen.blit(self.sprite,(self.x,self.y))
 
-    class Item_lvl_element:
+    class Interactable_lvl_element:
         def __init__(self, x, y, sprite, function):
             print(f"Item lvl element crated using sprite {sprite}!")
             self.x = x
@@ -62,11 +62,12 @@ def main():
             lvl_elements.remove(self)
 
     class Entity:
-        def __init__(self, x, y, sprites, x_speed = 0, y_speed = 0, direction = "down"):
+        def __init__(self, x, y, sprites, health, x_speed = 0, y_speed = 0, direction = "down"):
             self.x_speed = x_speed
             self.y_speed = y_speed
             self.x = x
             self.y = y
+            self.health = health
             self.sprites = sprites
             self.direction = direction
             print(f"Entity crated using sprites {sprites}!")
@@ -112,29 +113,39 @@ def main():
                         self.direction = "down"
             screen.blit(load_sprite(self.sprites[self.direction]), (self.x,self.y))
 
+        def heal(self):
+            self.health += 25
+            if self.health > 100:
+                self.health = 100
+
     #initializing the pygame module
     pygame.init()
     #load icon
     pygame.display.set_caption("Gam")
     #creating 240 x 180 screen surface
-    screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
+    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     #define a variable to control the main loop
     running = True
     #do da audio
-    pygame.mixer.init()
-    pygame.mixer.music.load("assets/song.mp3")
+    music = False
+    if music:
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/song.mp3")
     #make player
     player = Entity(128, 128, {
         "down":"assets/player/down.png", 
         "up":"assets/player/up.png", 
         "left":"assets/player/left.png", 
-        "right":"assets/player/right.png"})
+        "right":"assets/player/right.png"},50)
     blit_lvl_1()
     while running:
+        screen_width, screen_height = pygame.display.get_surface().get_size()
+        player_offset = (screen_width/2,screen_height/2)
         for i in lvl_elements:
             i.do_blit()
-        if not pygame.mixer.music.get_busy():
-            pygame.mixer.music.play()
+        if music:
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.play()
         screen_width, screen_height = pygame.display.get_surface().get_size()
         #handle events 
         for event in pygame.event.get():
