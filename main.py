@@ -50,6 +50,8 @@ def main():
             self.sprite = sprite
             self.health = health
             print(f"Encounter started using sprite {sprite}!")
+            #
+            lvl_elements.append()
         
 
     class Player:
@@ -64,6 +66,17 @@ def main():
             self.y_speed = y_speed
             self.direction = direction
             print(f"Player crated using sprites {sprites}!")
+            Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),lambda : self.attack("blunt"))
+
+        def attack(move):
+            if move == "blunt":
+                pass
+            elif move == "slice":
+                pass
+            elif move == "magic":
+                pass
+            else:
+                pass
 
         def draw_health(self):
             tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
