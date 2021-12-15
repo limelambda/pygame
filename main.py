@@ -5,15 +5,7 @@ import time
 def main():
 
     #making game variables
-    inventory = []
     lvl_elements = []
-    screen_width, screen_height = 1280, 720
-
-    def draw_health():
-        tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
-        nonlocal player
-        pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
-        pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248-(100-player.health)*screen_width/100, 32))
 
     def load_sprite(img, size = 64):
         return pygame.transform.scale(pygame.image.load(img), (size, size))
@@ -23,21 +15,6 @@ def main():
         y_range = range(y_2, y_2 + 64)
         if x_1 in x_range or x_1 + 64 in x_range:
             return y_1 in y_range or y_1 + 64 in y_range
-
-    def blit_lvl_1():
-        nonlocal lvl_elements, player
-        for i in lvl_elements:
-            del i
-        wall_sprite = load_sprite("assets/level_assets/wall.png")
-        wall = lambda x,y:Basic_lvl_element(x,y,wall_sprite)
-        
-        lvl_elements = [
-        wall(0,256),
-        wall(64,256),
-        wall(128,256),
-        wall(192,256),
-        Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
-        ]
 
     class Basic_lvl_element:
         def __init__(self, x, y, sprite):
@@ -61,22 +38,39 @@ def main():
             screen.blit(self.sprite,(self.x,self.y))
 
         def on_collision(self):
-            nonlocal inventory, lvl_elements
+            nonlocal lvl_elements
             self.function()
             print(self, lvl_elements)
             lvl_elements.remove(self)
 
-    class Entity:
-        def __init__(self, x, y, sprites, health, x_speed = 0, y_speed = 0, direction = "down"):
-            self.x_speed = x_speed
-            self.y_speed = y_speed
+    class Encounter:
+        def __init__(self, x, y, sprite, health):
             self.x = x
             self.y = y
+            self.sprite = sprite
             self.health = health
-            self.sprites = sprites
-            self.direction = direction
-            print(f"Entity crated using sprites {sprites}!")
+            print(f"Encounter started using sprite {sprite}!")
         
+
+    class Player:
+        def __init__(self, x, y, sprites, health = 100, inventory = [], x_speed = 0, y_speed = 0, direction = "down"):
+            self.x = x
+            self.y = y
+            self.sprites = sprites
+            self.health = health
+            self.inventory = inventory
+            self.health_anim = 50
+            self.x_speed = x_speed
+            self.y_speed = y_speed
+            self.direction = direction
+            print(f"Player crated using sprites {sprites}!")
+
+        def draw_health(self):
+            tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
+            self.health_anim = (self.health_anim + self.health) / 2
+            pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
+            pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248-(100-self.health_anim)*12.8, 32))
+
         def do_move(self):
             nonlocal lvl_elements
             prev_x = self.x
@@ -117,11 +111,30 @@ def main():
                     else:
                         self.direction = "down"
             screen.blit(load_sprite(self.sprites[self.direction]),(self.x,self.y))
+            if self.health_anim != self.health:
+                self.draw_health()
 
         def heal(self):
-            self.health += 25
-            if self.health > 100:
-                self.health = 100
+            if self.health+25 > 100:
+                self.health + (100-self.health)
+            else:
+                self.health += 25
+
+    def load_lvl_1():
+        nonlocal lvl_elements, player
+        for i in lvl_elements:
+            del i
+        wall_sprite = load_sprite("assets/level_assets/wall.png")
+        wall = lambda x,y:Basic_lvl_element(x,y,wall_sprite)
+        
+        lvl_elements = [
+        wall(0,256),
+        wall(64,256),
+        wall(128,256),
+        wall(192,256),
+        wall(1216,256),
+        Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
+        ]
 
     #initializing the pygame module
     pygame.init()
@@ -132,28 +145,23 @@ def main():
     #define a variable to control the main loop
     running = True
     #do da audio
-    music = False
+    music = True
     if music:
         pygame.mixer.init()
         pygame.mixer.music.load("assets/song.mp3")
     #make player
-    player = Entity(128, 128, {
+    player = Player(128, 128, {
         "down":"assets/player/down.png", 
         "up":"assets/player/up.png", 
         "left":"assets/player/left.png", 
         "right":"assets/player/right.png"},50)
-    blit_lvl_1()
-    screen_width, screen_height = 1280, 720
+    load_lvl_1()
     while running:
-        prev_screen_width, prev_screen_height = screen_width, screen_height
-        screen_width, screen_height = pygame.display.get_surface().get_size()
-        player_offset = (screen_width/720.0,screen_height/720.0)
         for i in lvl_elements:
             i.do_blit()
         if music:
             if not pygame.mixer.music.get_busy():
                 pygame.mixer.music.play()
-        screen_width, screen_height = pygame.display.get_surface().get_size()
         #handle events 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -174,7 +182,6 @@ def main():
         player.do_move()
         player.do_blit()
         #render
-        draw_health()
         pygame.display.flip()
         screen.fill((200,200,0))
         #fps limiter
