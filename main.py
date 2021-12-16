@@ -7,14 +7,14 @@ def main():
     #making game variables
     lvl_elements = []
 
-    def load_sprite(img, size = 64):
+    def load_sprite(img, size = 80):
         return pygame.transform.scale(pygame.image.load(img), (size, size))
     
     def colliding(x_1,y_1,x_2,y_2):
-        x_range = range(x_2, x_2 + 64)
-        y_range = range(y_2, y_2 + 64)
-        if x_1 in x_range or x_1 + 64 in x_range:
-            return y_1 in y_range or y_1 + 64 in y_range
+        x_range = range(x_2, x_2 + 80)
+        y_range = range(y_2, y_2 + 80)
+        if x_1 in x_range or x_1 + 80 in x_range:
+            return y_1 in y_range or y_1 + 80 in y_range
 
     class Basic_lvl_element:
         def __init__(self, x, y, sprite):
@@ -40,7 +40,6 @@ def main():
         def on_collision(self):
             nonlocal lvl_elements
             self.function()
-            print(self, lvl_elements)
             lvl_elements.remove(self)
 
     class Encounter:
@@ -51,6 +50,8 @@ def main():
             self.health = health
             print(f"Encounter started using sprite {sprite}!")
             #
+            pre_encounter_coords = (player.x, player.y)
+            player.x = 660
             lvl_elements.append()
         
 
@@ -66,11 +67,10 @@ def main():
             self.y_speed = y_speed
             self.direction = direction
             print(f"Player crated using sprites {sprites}!")
-            Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),lambda : self.attack("blunt"))
 
-        def attack(move):
+        def attack(self,move):
             if move == "blunt":
-                pass
+                print(f"")
             elif move == "slice":
                 pass
             elif move == "magic":
@@ -81,8 +81,8 @@ def main():
         def draw_health(self):
             tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
             self.health_anim = (self.health_anim + self.health) / 2
-            pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(16, 16, 1248, 32))
-            pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(16, 16, 1248-(100-self.health_anim)*12.8, 32))
+            pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(20, 20, 1240, 40))
+            pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(20, 20, 1240-(100-self.health_anim)*12.8, 40))
 
         def do_move(self):
             nonlocal lvl_elements
@@ -127,26 +127,35 @@ def main():
             if self.health_anim != self.health:
                 self.draw_health()
 
-        def heal(self):
-            if self.health+25 > 100:
-                self.health + (100-self.health)
+        def heal(self, amount = 25):
+            if self.health + amount > 100:
+                self.health += (100-self.health)
             else:
-                self.health += 25
+                self.health += amount
+
+        def damage(self, amount):
+            if self.health - amount < 0:
+                self.health = 0
+            else:
+                self.health -= 25
 
     def load_lvl_1():
         nonlocal lvl_elements, player
         for i in lvl_elements:
             del i
         wall_sprite = load_sprite("assets/level_assets/wall.png")
-        wall = lambda x,y:Basic_lvl_element(x,y,wall_sprite)
+        heart_sprite = load_sprite("assets/level_assets/heal.png")
+        wall = lambda x,y:Basic_lvl_element(x*80,y*80,wall_sprite)
         
         lvl_elements = [
-        wall(0,256),
-        wall(64,256),
-        wall(128,256),
-        wall(192,256),
-        wall(1216,256),
-        Interactable_lvl_element(96,320,load_sprite("assets/level_assets/heal.png"),player.heal)
+        wall(0,4),
+        wall(1,4),
+        wall(2,4),
+        wall(3,4),
+        wall(15,4),
+        Interactable_lvl_element(80,400,heart_sprite,player.heal),
+        Interactable_lvl_element(0,160,heart_sprite,player.heal),
+        Interactable_lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : player.attack("blunt"))
         ]
 
     #initializing the pygame module
@@ -163,7 +172,7 @@ def main():
         pygame.mixer.init()
         pygame.mixer.music.load("assets/song.mp3")
     #make player
-    player = Player(128, 128, {
+    player = Player(80, 80, {
         "down":"assets/player/down.png", 
         "up":"assets/player/up.png", 
         "left":"assets/player/left.png", 
