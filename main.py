@@ -43,16 +43,19 @@ def main():
             lvl_elements.remove(self)
 
     class Encounter:
-        def __init__(self, x, y, sprite, health):
-            self.x = x
-            self.y = y
+        def __init__(self, sprite, health):
             self.sprite = sprite
             self.health = health
             print(f"Encounter started using sprite {sprite}!")
-            #
             pre_encounter_coords = (player.x, player.y)
-            player.x = 660
-            lvl_elements.append()
+            player.x, player.y = 80, 560
+            battle_elements = [
+                Interactable_lvl_element(160,0,load_sprite("assets/level_assets/heal.png"),None),
+                Interactable_lvl_element(240,0,load_sprite("assets/level_assets/heal.png"),None),
+                Interactable_lvl_element(320,0,load_sprite("assets/level_assets/heal.png"),None),
+            ]
+            for i in battle_elements:
+                lvl_elements.append(i)
         
 
     class Player:
@@ -141,8 +144,6 @@ def main():
 
     def load_lvl_1():
         nonlocal lvl_elements, player
-        for i in lvl_elements:
-            del i
         wall_sprite = load_sprite("assets/level_assets/wall.png")
         heart_sprite = load_sprite("assets/level_assets/heal.png")
         wall = lambda x,y:Basic_lvl_element(x*80,y*80,wall_sprite)
@@ -155,7 +156,7 @@ def main():
         wall(15,4),
         Interactable_lvl_element(80,400,heart_sprite,player.heal),
         Interactable_lvl_element(0,160,heart_sprite,player.heal),
-        Interactable_lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : player.attack("blunt"))
+        Interactable_lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : Encounter(load_sprite("assets/ogre.png"),50))
         ]
 
     #initializing the pygame module
