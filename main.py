@@ -5,7 +5,6 @@ def main():
  
     #making game variables
     lvl_elements = None
-    background = None
     grass_background = pygame.image.load("assets/grass.png")
 
     #define functions
@@ -45,12 +44,48 @@ def main():
             self.function()
  
     class Encounter:
-        def __init__(self, sprite, health):
+        def __init__(self, sprite, health, x = 640, y = 20):
+            self.x = x
+            self.y = y
             self.sprite = sprite
             self.health = health
             print(f"Encounter started using sprite {sprite}!")
             pre_encounter_coords = (player.x, player.y)
-            load_battle()
+            load_battle(self)
+
+        
+        def attack(self,move):
+            if move == "blunt":
+                print(f"")
+            elif move == "slice":
+                print(f"")
+            elif move == "magic":
+                print(f"")
+            else:
+                raise Exception("Invalid attack move type")
+ 
+        def draw_health(self):
+            tuple_subtraction = lambda a,b:tuple(map(lambda a,b:a-b, a, b))
+            self.health_anim = (self.health_anim + self.health) / 2
+            pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(20, 60, 1240, 40))
+            pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(20, 60, 1240-(100-self.health_anim)*12.8, 40))
+ 
+        def do_blit(self):
+            screen.blit(load_sprite(self.sprite),(self.x,self.y))
+            if self.health_anim != self.health:
+                self.draw_health()
+ 
+        def heal(self, amount = 25):
+            if self.health + amount > 100:
+                self.health += (100-self.health)
+            else:
+                self.health += amount
+ 
+        def damage(self, amount):
+            if self.health - amount < 0:
+                self.health = 0
+            else:
+                self.health -= 25
  
     class Player:
         def __init__(self, x, y, sprites, health = 100, inventory = [], x_speed = 0, y_speed = 0, direction = "down"):
@@ -87,7 +122,7 @@ def main():
             prev_y = self.y
             self.x = int(round(self.x + self.x_speed / 2))
             self.y = int(round(self.y + self.y_speed / 2))
-            for i in lvl_elements:
+            for i in lvl_elements[:-1]:
                 if colliding(self.x, self.y, i.x, i.y):
                     print(f"at coordinates {self.x, self.y} collision occoured at speed {self.x_speed, self.y_speed}")
                     try:
@@ -136,9 +171,8 @@ def main():
             else:
                 self.health -= 25
  
-    def load_battle():
-        nonlocal lvl_elements, player, background
-        background = lambda : screen.fill((0,0,0))
+    def load_battle(enemy):
+        nonlocal lvl_elements, player
         player.x = 640
         player.y = 480
         wall_sprite = load_sprite("assets/level_assets/wall.png")
@@ -161,12 +195,15 @@ def main():
         wall(6,6),
         wall(6,7),
         #boundry
-        Interactable_lvl_element(640,320,load_sprite("assets/weapons/katana.png", 16, 80),lambda : player.damage(20))
+        Interactable_lvl_element(640,320,load_sprite("assets/weapons/katana.png", 16, 80),lambda : enemy.damage(20)),
+        #the enemy himself
+        enemy,
+        #background
+        lambda : screen.fill((0,0,0))
         ]
 
     def load_lvl_1():
-        nonlocal lvl_elements, player, background
-        background = lambda : screen.blit(grass_background, (0, 0))
+        nonlocal lvl_elements, player
         wall_sprite = load_sprite("assets/level_assets/wall.png")
         heart_sprite = load_sprite("assets/level_assets/heal.png")
         wall = lambda x,y:Basic_lvl_element(x*80,y*80,wall_sprite)
@@ -183,7 +220,8 @@ def main():
         wall(15,4),
         Interactable_lvl_element(80,400,heart_sprite,player.heal),
         Interactable_lvl_element(0,160,heart_sprite,player.heal),
-        Interactable_lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : Encounter(load_sprite("assets/enemyf1.png"),50))
+        Interactable_lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : Encounter(load_sprite("assets/enemyf1.png"),50)),
+        lambda : screen.blit(grass_background, (0, 0))
         ]
  
     #initializing the pygame module
@@ -208,8 +246,8 @@ def main():
     load_lvl_1()
     while running:
         #blit level
-        background()
-        for i in lvl_elements:
+        lvl_elements[-1]()
+        for i in lvl_elements[:-1]:
             i.do_blit()
         if music:
             if not pygame.mixer.music.get_busy():
