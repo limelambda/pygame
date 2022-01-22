@@ -1,0 +1,20 @@
+from main import lvl_element, load_sprite
+global lvl_elements, player
+print("Loading lvl_1!")
+heart_sprite = load_sprite("assets/level_assets/heal.png")
+wall = lambda x,y:lvl_element(x*80,y*80,load_sprite("assets/level_assets/wall.png"))
+lvl_elements = [
+wall(0,4),
+wall(1,4),
+wall(2,4),
+wall(3,4),
+wall(4,4),
+wall(2,5),
+wall(4,5),
+wall(4,6),
+wall(15,4),
+lvl_element(80,400,heart_sprite,player.heal),
+lvl_element(0,160,heart_sprite,player.heal),
+lvl_element(0,0,load_sprite("assets/level_assets/heal.png"),lambda : Encounter(load_sprite("assets/enemyf1.png", 120, 120),50,)),
+lambda : screen.blit(grass_background, (0, 0))
+]

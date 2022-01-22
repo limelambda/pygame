@@ -2,4 +2,5 @@
 *.lock
 *.breakpoints
 /.venv
+/__pycache__
 assets/song.mp3
