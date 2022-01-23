@@ -6,15 +6,14 @@ import pygame
 lvl_elements = None
 grass_background = pygame.image.load("assets/grass.png")
 
- #define functions
+#define functions
 load_sprite = lambda img, x = 80, y = 80: pygame.transform.scale(pygame.image.load(img), (x, y))
 
 def colliding(x_1,y_1,x_2,y_2, x_size = 80, y_size = 80):
-    x_range = range(x_2 + 1, x_2 + x_size)
-    y_range = range(y_2 + 1, y_2 + y_size)
+    x_range, y_range = range(x_2 + 1, x_2 + x_size), range(y_2 + 1, y_2 + y_size)
     if x_1 + 1 in x_range or x_1 + 80 in x_range:
         return y_1 + 1 in y_range or y_1 + 80 in y_range
-    return x_1 < 0 or x_1 > 1280 or y_1 < 0 or y_1 > 720
+    return x_1 < 0 or x_1 > 1200 or y_1 < 0 or y_1 > 640
 
 class lvl_element:
     def __init__(self, x, y, sprite, on_collision = None, x_size = 80, y_size = 80, persistent = False):
@@ -80,6 +79,8 @@ class Player:
         self.x = x
         self.y = y
         self.sprites = sprites
+        for k,v in self.sprites.items():
+            self.sprites[k] = load_sprite(v)
         self.health = health
         self.inventory = inventory
         self.health_anim = health
@@ -130,7 +131,7 @@ class Player:
                     self.direction = "up"
                 else:
                     self.direction = "down"
-        screen.blit(load_sprite(self.sprites[self.direction]),(self.x,self.y))
+        screen.blit(self.sprites[self.direction],(self.x,self.y))
         if self.health_anim != self.health:
             self.draw_health()
 
@@ -147,16 +148,14 @@ class Player:
             self.health -= 25
 
 def load_lvl(load_lvl):
-    global lvl_elements, player, lvl_element
     file = open(load_lvl)
     exec(file.read())
     file.close()
 
- #initializing the pygame module
+#initializing the pygame module
 pygame.init()
-#load icon
-pygame.display.set_caption("Gam")
-#creating 240 x 180 screen surface
+#creating pygame variables
+clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1280, 720), pygame.SCALED)
 #define a variable to control the main loop
 running = True
@@ -201,5 +200,6 @@ while True:
     player.do_blit()
     #render
     pygame.display.flip()
-    #fps limiter
-    pygame.time.Clock().tick(60)
+    #fps stuff
+    clock.tick(60)
+    pygame.display.set_caption(f"Gam fps:{round(clock.get_fps())}")
