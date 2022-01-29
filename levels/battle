@@ -24,7 +24,7 @@ wall(6,4),
 wall(6,5),
 wall(6,6),
 wall(6,7),
-lvl_element(664,320,load_sprite("assets/weapons/katana.png", 16, 80), lambda : [i() for i in [lambda : active_encounter.damage(20),  move_player_center,]], 16, 80, True),
+lvl_element(664,320,load_sprite("assets/weapons/katana.png", 16, 80), lambda : [i() for i in [lambda : active_encounter.damage(10),  move_player_center,]], 16, 80, True),
 active_encounter,
 lambda : screen.fill((0,0,0))
 ]

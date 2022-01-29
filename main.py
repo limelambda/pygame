@@ -65,11 +65,11 @@ class Encounter:
         else:
             self.health += amount
 
-    def damage(self, amount = 25):
+    def damage(self, amount = 25,):
         if self.health - amount < 0:
             self.health = 0
         else:
-            self.health -= 25
+            self.health -= amount
 
     def load_battle(self):
         load_lvl("levels/battle")
@@ -145,7 +145,7 @@ class Player:
         if self.health - amount < 0:
             self.health = 0
         else:
-            self.health -= 25
+            self.health -= amount
 
 def load_lvl(load_lvl):
     file = open(load_lvl)
