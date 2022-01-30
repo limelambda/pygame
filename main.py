@@ -1,6 +1,5 @@
 #importing modules
-from fileinput import close
-import pygame
+import random, pygame, time
  
 #making game variables
 lvl_elements = None
@@ -41,7 +40,7 @@ class Encounter:
         print(f"Encounter started using sprite {sprite}!")
         self.pre_encounter_coords = (player.x, player.y)
         self.pre_encounter_lvl_elements = lvl_elements
-        self.load_battle()
+        load_lvl("levels/battle.py")
         self.x_size = 80
         self.y_size = 80
 
@@ -58,6 +57,8 @@ class Encounter:
         screen.blit(self.sprite,(self.x,self.y))
         if self.health_anim != self.health:
             self.draw_health()
+        else:
+            player.speed = 1
 
     def heal(self, amount = 25):
         if self.health + amount > 100:
@@ -65,17 +66,20 @@ class Encounter:
         else:
             self.health += amount
 
-    def damage(self, amount = 25,):
+    def damage(self, amount = 25, enemy_retaliates = True):
         if self.health - amount < 0:
             self.health = 0
         else:
             self.health -= amount
-
-    def load_battle(self):
-        load_lvl("levels/battle")
+            if enemy_retaliates:
+                player.speed = 0
+                if random.getrandbits(2): #non 0 evaluates to True giving a 2 in 3 chance to damage player for 15-25 hp else use heal ability
+                    player.damage(random.randint(15,25))
+                else:
+                    self.heal(random.randint(15,25))
 
 class Player:
-    def __init__(self, x, y, sprites, health = 100, inventory = [], x_speed = 0, y_speed = 0, direction = "down"):
+    def __init__(self, x, y, sprites, health = 100, inventory = [], speed = 1, x_speed = 0, y_speed = 0, direction = "down"):
         self.x = x
         self.y = y
         self.sprites = sprites
@@ -86,6 +90,7 @@ class Player:
         self.health_anim = health
         self.x_speed = x_speed
         self.y_speed = y_speed
+        self.speed = speed
         self.direction = direction
         print(f"Player crated using sprites {sprites}!")
 
@@ -93,6 +98,10 @@ class Player:
         self.health_anim += 1*(int(self.health-self.health_anim>0)-0.5)*2
         pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(20, 660, 1240, 40))
         pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(20, 660, 1240-(100-self.health_anim)*12.8, 40))
+        print(self.health_anim)
+        if self.health_anim == 0:
+            print("Game over")
+            load_lvl("levels/game_over.py")
 
     def do_move(self):
         global lvl_elements
@@ -170,7 +179,7 @@ player = Player(80, 80, {
     "up":"assets/player/up.png",
     "left":"assets/player/left.png",
     "right":"assets/player/right.png"},50)
-load_lvl("levels/lvl_1")
+load_lvl("levels/lvl_1.py")
 while True:
     #blit level
     lvl_elements[-1]()
@@ -189,13 +198,13 @@ while True:
                 quit()
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_UP]:
-        player.y_speed -= 1
+        player.y_speed -= player.speed
     if pressed[pygame.K_DOWN]:
-        player.y_speed += 1
+        player.y_speed += player.speed
     if pressed[pygame.K_RIGHT]:
-        player.x_speed += 1
+        player.x_speed += player.speed
     if pressed[pygame.K_LEFT]:
-        player.x_speed -= 1
+        player.x_speed -= player.speed
     player.do_move()
     player.do_blit()
     #render
