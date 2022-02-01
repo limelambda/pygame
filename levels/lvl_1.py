@@ -1,6 +1,3 @@
-from main import load_lvl, lvl_element, load_sprite
-global lvl_elements, player
-print("Loading lvl_1!")
 heart_sprite = load_sprite("assets/level_assets/heal.png")
 wall_sprite = load_sprite("assets/level_assets/wall.png")
 lvl_elements = [

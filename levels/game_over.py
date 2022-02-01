@@ -1,5 +1,3 @@
-from main import load_lvl, lvl_element, load_sprite
-global lvl_elements, player
 player.speed = 1
 print("Loading game over scene!")
 player.x, player.y = 640, 480

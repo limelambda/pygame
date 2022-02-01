@@ -1,5 +1,5 @@
 #importing modules
-import random, pygame, time
+import random, pygame
  
 #making game variables
 lvl_elements = None
@@ -13,6 +13,19 @@ def colliding(x_1,y_1,x_2,y_2, x_size = 80, y_size = 80):
     if x_1 + 1 in x_range or x_1 + 80 in x_range:
         return y_1 + 1 in y_range or y_1 + 80 in y_range
     return x_1 < 0 or x_1 > 1200 or y_1 < 0 or y_1 > 640
+
+def move_player_center():
+    player.x, player.y = 640, 480
+
+def load_lvl(load_lvl):
+    move_player_center()
+    file = open(load_lvl)
+    file_content = file.read()
+    print(f"loading {load_lvl}")
+    file_content = "from main import load_lvl, lvl_element, load_sprite;global lvl_elements, player;" + file_content
+    exec(file_content)
+    del(file_content)
+    file.close()
 
 class lvl_element:
     def __init__(self, x, y, sprite, on_collision = None, x_size = 80, y_size = 80, persistent = False):
@@ -156,11 +169,6 @@ class Player:
         else:
             self.health -= amount
 
-def load_lvl(load_lvl):
-    file = open(load_lvl)
-    exec(file.read())
-    file.close()
-
 #initializing the pygame module
 pygame.init()
 #creating pygame variables
@@ -195,7 +203,8 @@ while True:
             quit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                quit()
+                prior_level = lvl_elements 
+                load_lvl("levels/pause.py")
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_UP]:
         player.y_speed -= player.speed

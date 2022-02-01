@@ -1,5 +1,4 @@
-global active_encounter
-wall_sprite = load_sprite("assets/level_assets/wall.png")
+("assets/level_assets/wall.png")
 lvl_elements = [
 lvl_element(560,240,wall_sprite),
 lvl_element(560,560,wall_sprite),
