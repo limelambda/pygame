@@ -1,5 +1,4 @@
 player.speed = 1
-print("Loading game over scene!")
 player.x, player.y = 640, 480
 wall_sprite = load_sprite("assets/level_assets/wall.png")
 lvl_elements = [

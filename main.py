@@ -26,10 +26,10 @@ def load_lvl(load_lvl):
     exec(file_content)
     del(file_content)
     file.close()
+    print(f"{len(lvl_elements)} lvl elements loaded")
 
 class lvl_element:
     def __init__(self, x, y, sprite, on_collision = None, x_size = 80, y_size = 80, persistent = False):
-        print(f"Item lvl element crated using sprite {sprite}!")
         self.x = x
         self.y = y
         self.sprite = sprite
@@ -50,7 +50,7 @@ class Encounter:
         self.sprite = sprite
         self.health = health
         self.health_anim = health
-        print(f"Encounter started using sprite {sprite}!")
+        print(f"Encounter started!")
         self.pre_encounter_coords = (player.x, player.y)
         self.pre_encounter_lvl_elements = lvl_elements
         load_lvl("levels/battle.py")
@@ -61,7 +61,7 @@ class Encounter:
         self.health_anim += 1*(int(self.health-self.health_anim>0)-0.5)*2
         pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(20, 60, 1240, 40))
         pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(20, 60, 1240-(100-self.health_anim)*12.8, 40))
-        if self.health_anim == 0:
+        if self.health_anim <= 0:
             global lvl_elements
             lvl_elements = self.pre_encounter_lvl_elements
             player.x, player.y = self.pre_encounter_coords
@@ -105,15 +105,14 @@ class Player:
         self.y_speed = y_speed
         self.speed = speed
         self.direction = direction
-        print(f"Player crated using sprites {sprites}!")
+        print(f"Player crated!")
 
     def draw_health(self):
         self.health_anim += 1*(int(self.health-self.health_anim>0)-0.5)*2
         pygame.draw.rect(screen, ((200,100,100)), pygame.Rect(20, 660, 1240, 40))
         pygame.draw.rect(screen, ((100,200,100)), pygame.Rect(20, 660, 1240-(100-self.health_anim)*12.8, 40))
-        print(self.health_anim)
-        if self.health_anim == 0:
-            print("Game over")
+        if self.health_anim <= 0:
+            print("Player died")
             load_lvl("levels/game_over.py")
 
     def do_move(self):
