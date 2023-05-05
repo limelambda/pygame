@@ -1,6 +1,6 @@
 #importing modules
 import random, pygame
- 
+
 #making game variables
 lvl_elements = None
 grass_background = pygame.image.load("assets/grass.png")
@@ -56,6 +56,7 @@ class Encounter:
         load_lvl("levels/battle.py")
         self.x_size = 80
         self.y_size = 80
+        self.on_collision = None
 
     def draw_health(self):
         self.health_anim += 1*(int(self.health-self.health_anim>0)-0.5)*2
@@ -92,7 +93,7 @@ class Encounter:
                     self.heal(random.randint(15,25))
 
 class Player:
-    def __init__(self, x, y, sprites, health = 100, inventory = [], speed = 1, x_speed = 0, y_speed = 0, direction = "down"):
+    def __init__(self, x, y, sprites, health = 100, inventory = [], speed = 1, x_speed = 0, y_speed = 0, direction = "down", x_size = 80, y_size = 80, badvar = None):
         self.x = x
         self.y = y
         self.sprites = sprites
@@ -105,6 +106,10 @@ class Player:
         self.y_speed = y_speed
         self.speed = speed
         self.direction = direction
+        self.x_size = x_size
+        self.y_size = y_size
+        self.badvar = badvar
+        self.on_collision = None
         print(f"Player crated!")
 
     def draw_health(self):
@@ -121,8 +126,9 @@ class Player:
         prev_y = self.y
         self.x = int(round(self.x + self.x_speed / 2))
         self.y = int(round(self.y + self.y_speed / 2))
-        for i in lvl_elements[:-1]:
+        for i in lvl_elements[:-1] + [self.badvar]:
             if colliding(self.x, self.y, i.x, i.y, i.x_size, i.y_size):
+                self.damage(1)
                 print(f"at coordinates {self.x, self.y} collision occoured at speed {self.x_speed, self.y_speed}")
                 if i.on_collision != None:
                     print(f"speical collision function triggered for {i.__class__.__name__}")
@@ -182,10 +188,16 @@ if music:
     pygame.mixer.music.load("assets/song.mp3")
 #make player
 player = Player(80, 80, {
+    "down":"assets/playerlmao/down.png",
+    "up":"assets/playerlmao/up.png",
+    "left":"assets/playerlmao/left.png",
+    "right":"assets/playerlmao/right.png"},50)
+player2 = Player(80, 80, {
     "down":"assets/player/down.png",
     "up":"assets/player/up.png",
     "left":"assets/player/left.png",
-    "right":"assets/player/right.png"},50)
+    "right":"assets/player/right.png"},50,badvar=player)
+player.badvar=player2
 load_lvl("levels/lvl_1.py")
 while True:
     #blit level
@@ -213,10 +225,20 @@ while True:
         player.x_speed += player.speed
     if pressed[pygame.K_LEFT]:
         player.x_speed -= player.speed
+    if pressed[pygame.K_w]:
+        player2.y_speed -= player2.speed
+    if pressed[pygame.K_s]:
+        player2.y_speed += player2.speed
+    if pressed[pygame.K_d]:
+        player2.x_speed += player2.speed
+    if pressed[pygame.K_a]:
+        player2.x_speed -= player2.speed
     player.do_move()
     player.do_blit()
+    player2.do_move()
+    player2.do_blit()
     #render
     pygame.display.flip()
     #fps stuff
-    clock.tick(60)
+    clock.tick(90)
     pygame.display.set_caption(f"Gam fps:{round(clock.get_fps())}")
